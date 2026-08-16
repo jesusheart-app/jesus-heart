@@ -1,7 +1,7 @@
 {
   "name": "예수마음",
   "short_name": "예수마음",
-  "start_url": ".",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#FAF6EE",
   "theme_color": "#7A2E2E",
