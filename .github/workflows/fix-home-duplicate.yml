@@ -1,0 +1,19 @@
+name: Fix duplicate home screen
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-home-duplicate.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove injected duplicate home and update prayer icon
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index_v2.html')
+          s
