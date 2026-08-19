@@ -1,0 +1,55 @@
+name: Apply 예수마음 home redesign
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-home-redesign.yml'
+permissions:
+  contents: write
+jobs:
+  redesign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Redesign
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index_v2.html'); s=p.read_text(encoding='utf-8')
+          a=s.index('function HomeTab({'); b=s.index('\n\nfunction MyPageTab',a)
+          home=r'''function HomeTab({setTab,onOpenMyPage}){return <div style={{paddingTop:4}}>
+            <style>{`.home-redesign{display:grid;grid-template-columns:1fr 1fr;gap:12px}.home-redesign button{position:relative;min-height:188px;border:1px solid var(--color-border);border-radius:20px;background:var(--color-surface);padding:0;overflow:hidden;text-align:left;cursor:pointer;box-shadow:0 4px 14px rgba(43,42,40,.07);font-family:var(--font-body)}.home-redesign .visual{height:88px;position:relative}.home-redesign .visual:after{content:'';position:absolute;width:120px;height:120px;border-radius:50%;right:-35px;top:-48px;opacity:.28;background:var(--color-sage)}.home-redesign .word .visual{background:linear-gradient(135deg,#E7EFE6,#F6F5EF)}.home-redesign .prayer .visual{background:linear-gradient(135deg,var(--color-accent-soft),var(--color-bg))}.home-redesign .note .visual{background:linear-gradient(135deg,#F6ECD8,var(--color-bg))}.home-redesign .gratitude .visual{background:linear-gradient(135deg,#E7EFE6,var(--color-bg))}.home-redesign .icon{position:absolute;left:14px;bottom:10px;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;z-index:1}.home-redesign .word .icon,.home-redesign .gratitude .icon{background:var(--color-sage)}.home-redesign .prayer .icon{background:var(--color-accent)}.home-redesign .note .icon{background:var(--color-gold)}.home-redesign .body{padding:12px 14px}.home-redesign .title{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--color-accent)}.home-redesign .note .title{color:var(--color-gold)}.home-redesign .word .title,.home-redesign .gratitude .title{color:var(--color-sage)}.home-redesign .sub{font-size:11px;color:var(--color-muted);margin-top:5px;line-height:1.45}.home-redesign .arrow{position:absolute;right:11px;bottom:11px;width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--color-accent);font-size:19px}.home-verse2{margin-top:16px;padding:14px 15px;border:1px solid var(--color-border);border-radius:16px;background:rgba(255,255,255,.7);text-align:center}.home-verse2 .v{font-family:var(--font-display);font-size:13px;line-height:1.7}.home-verse2 .r{font-size:10px;color:var(--color-muted);margin-top:4px}`}</style>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:16}}><div style={{display:'flex',alignItems:'center',gap:10}}><img src="icon-192.png" alt="예수마음" style={{width:48,height:48,borderRadius:14,border:'1px solid var(--color-border)',boxShadow:'0 2px 8px rgba(43,42,40,.08)'}}/><div><div style={{fontFamily:'var(--font-display)',fontSize:27,fontWeight:700,color:'var(--color-accent)',lineHeight:1.1}}>예수마음</div><div style={{fontSize:11,color:'var(--color-muted)',marginTop:4}}>오늘도 예수님의 마음으로</div></div></div><button onClick={onOpenMyPage} style={{display:'flex',alignItems:'center',gap:5,border:'1px solid var(--color-border)',background:'var(--color-surface)',color:'var(--color-accent)',borderRadius:12,padding:'8px 10px',fontSize:11,fontWeight:700,fontFamily:'var(--font-body)',cursor:'pointer'}}><span style={{fontSize:17}}>♙</span> 내 정보</button></div>
+            <div className="home-redesign">
+              <button className="word" onClick={()=>setTab('read')}><div className="visual"><div className="icon">✓</div></div><div className="body"><div className="title">말씀 체크</div><div className="sub">오늘 읽은 말씀을 체크해요</div></div><div className="arrow">›</div></button>
+              <button className="prayer" onClick={()=>setTab('bank')}><div className="visual"><div className="icon">✦</div></div><div className="body"><div className="title">기도</div><div className="sub">기도를 기록하고 함께 기도해요</div></div><div className="arrow">›</div></button>
+              <button className="note" onClick={()=>setTab('note')}><div className="visual"><div className="icon">✎</div></div><div className="body"><div className="title">말씀노트</div><div className="sub">말씀을 기록해요</div></div><div className="arrow">›</div></button>
+              <button className="gratitude" onClick={()=>setTab('gratitude')}><div className="visual"><div className="icon">♡</div></div><div className="body"><div className="title">감사나눔</div><div className="sub">감사를 기록하고 나눠요</div></div><div className="arrow">›</div></button>
+            </div>
+            <div className="home-verse2"><div className="v">주 예수를 믿으라 그리하면 너와 네 집이 구원을 받으리라 하고</div><div className="r">사도행전 16:31 · 개역개정</div></div>
+          </div>}
+          '''
+          s=s[:a]+home+s[b:]
+          s=s.replace('<h2>성경 읽기</h2>','<h2>말씀 체크</h2>',1).replace('오늘 성경 읽기 체크하기','오늘 읽은 말씀 체크하기')
+          s=re.sub(r'<div className="tabs bottom-tabs">\s*\{TABS\.map\(t => \(.*?</div>\s*\{tab === \'home\' && <HomeTab.*?\n      \)\}', '''<div className={`tabs bottom-tabs ${tab === 'home' ? 'home-nav-hidden' : ''}`}>
+        {TABS.map(t => <button key={t.key} className={`tab-btn ${tab===t.key?'active':''}`} onClick={()=>setTab(t.key)}>{t.label}</button>)}
+      </div>
+
+      {tab === 'home' && <HomeTab setTab={setTab} onOpenMyPage={()=>setTab('mypage')} />}
+      {tab === 'read' && <ReadTab member={member} today={today} toggleReadingDate={toggleReadingDate} />}
+      {tab === 'note' && <NoteTab noteData={noteData} today={today} addNote={addNote} deleteNote={deleteNote} />}
+      {tab === 'bank' && <BankTab member={member} addPrayerEntry={addPrayerEntry} deletePrayerEntry={deletePrayerEntry} />}
+      {tab === 'community' && <WallTab requests={requests} loading={wallLoading} myId={myId} myName={myName} isAdmin={adminUnlocked} addRequest={addRequest} prayFor={prayFor} deleteRequest={deleteRequest} />}
+      {tab === 'gratitude' && <GratitudeTab entries={gratitudeEntries} loading={gratitudeLoading} myId={myId} myName={myName} isAdmin={adminUnlocked} addEntry={addGratitude} joyFor={joyFor} deleteEntry={deleteGratitude} />}
+      {tab === 'mypage' && (
+        <MyPageTab myName={myName} setMyName={setMyName} member={member} noteData={noteData} settings={settings} onSaveSettings={persistSettings} onOpenAdmin={()=>setShowAdminLogin(true)} />
+      )}''', s, count=1, flags=re.S)
+          s=s.replace('  .bottom-tabs { position:sticky; bottom:10px; z-index:10; }','  .bottom-tabs { position:sticky; bottom:10px; z-index:10; }\n  .home-nav-hidden{display:none;}')
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index_v2.html
+          git rm .github/workflows/one-time-home-redesign.yml
+          git commit -m 'Redesign 예수마음 home screen'
+          git push
