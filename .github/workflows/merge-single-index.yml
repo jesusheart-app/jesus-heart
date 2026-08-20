@@ -1,0 +1,49 @@
+name: Merge app into single index
+on:
+  push:
+    paths:
+      - '.github/workflows/merge-single-index.yml'
+permissions:
+  contents: write
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge index files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          gate = Path('index.html').read_text(encoding='utf-8')
+          app = Path('index_v2.html').read_text(encoding='utf-8')
+
+          gate_start = gate.index('<div id="gate"')
+          pending_start = gate.index('<div id="pending"')
+          script_start = gate.index('<script type="module">')
+          gate_end = gate.index('</div></div></div>', gate_start) + len('</div></div></div>')
+          pending_end = gate.index('</div></div></div>', pending_start) + len('</div></div></div>')
+          script_end = gate.index('</script>', script_start) + len('</script>')
+
+          gate_html = gate[gate_start:gate_end]
+          pending_html = gate[pending_start:pending_end]
+          auth_script = gate[script_start:script_end]
+          auth_script = auth_script.replace("location.href='index_v2.html'", "$('gate').style.display='none'; $('pending').style.display='none'; const root=$('root'); if(root) root.style.display='block';")
+
+          auth_css = '''\n<style id="single-index-auth">\n#root{display:none}\n#gate,#pending{max-width:430px;margin:0 auto;padding:48px 20px}\n#gate .card,#pending .card{background:#fff;border:1px solid #E6DFD1;border-radius:18px;padding:26px;box-shadow:0 2px 8px #00000008}\n#gate h1,#pending h1{font-family:Georgia,"Batang",serif;color:#7A2E2E;text-align:center;margin:0 0 6px;font-size:28px}\n#gate p,#pending p{font-size:13px;line-height:1.6;color:#8C8577;text-align:center;margin:0 0 22px}\n#gate .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}\n#gate .tabs button{border:0;border-radius:10px;padding:10px;background:#F3E4E1;color:#7A2E2E;font-weight:700;cursor:pointer}\n#gate .tabs button.active{background:#7A2E2E;color:#fff}\n#gate .field{margin:10px 0}\n#gate .field label{display:block;font-size:12px;margin-bottom:5px;color:#6d675e}\n#gate .field input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #E6DFD1;border-radius:10px;background:#FAF6EE;font-size:14px}\n#gate .primary,#gate .secondary{width:100%;border-radius:10px;padding:12px;font-weight:700;cursor:pointer;margin-top:8px}\n#gate .primary{border:0;background:#7A2E2E;color:#fff}\n#gate .secondary{border:1px solid #E6DFD1;background:#fff;color:#7A2E2E}\n#gate .msg{margin-top:12px;padding:10px;border-radius:9px;background:#F6ECD8;font-size:12px;line-height:1.5;display:none}\n#gate .small{font-size:11px;color:#8C8577;text-align:center;margin-top:14px}\n#pending{display:none;text-align:center}\n#pending h2{font-family:Georgia,"Batang",serif;color:#7A2E2E;font-size:21px}\n#pending button{border:1px solid #E6DFD1;border-radius:10px;padding:10px 18px;background:#fff;color:#7A2E2E;font-weight:700;cursor:pointer;margin-top:6px}\n</style>\n'''
+
+          merged = app.replace('</head>', auth_css + '</head>', 1)
+          merged = merged.replace('<body>', '<body>\n' + gate_html + '\n' + pending_html, 1)
+          merged = merged.replace('</body>', auth_script + '\n</body>', 1)
+
+          Path('index.html').write_text(merged, encoding='utf-8')
+          Path('index_v2.html').unlink()
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .github/workflows/merge-single-index.yml
+          git rm index_v2.html
+          git commit -m 'Use one index.html for login and app'
+          git push
