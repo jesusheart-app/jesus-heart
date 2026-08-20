@@ -1,0 +1,54 @@
+name: Apply second home-button design
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-second-button-design.yml'
+permissions:
+  contents: write
+jobs:
+  design:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply second design style to existing home buttons
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index_v2.html')
+          s=p.read_text(encoding='utf-8')
+          start='<!-- second-home-button-design-v2 -->'
+          end='<!-- /second-home-button-design-v2 -->'
+          css=r'''<!-- second-home-button-design-v2 -->
+          <style>
+          .home-redesign{gap:12px;margin-top:4px}
+          .home-redesign button{position:relative;min-height:178px;border-radius:20px;border:1px solid rgba(255,255,255,.72);box-shadow:0 3px 12px rgba(70,55,45,.07);overflow:hidden}
+          .home-redesign button:active{transform:scale(.985)}
+          .home-redesign .visual{height:94px;border-radius:0;position:relative;overflow:hidden}
+          .home-redesign .visual:after{width:118px;height:118px;right:-38px;top:-48px;opacity:.12;background:#fff}
+          .home-redesign .word{background:#F1F6EF}.home-redesign .word .visual{background:#E5F0E4}
+          .home-redesign .prayer{background:#F2EEF7}.home-redesign .prayer .visual{background:#E7E0F1}
+          .home-redesign .note{background:#FBF2E5}.home-redesign .note .visual{background:#F5E7D1}
+          .home-redesign .gratitude{background:#EEF4F5}.home-redesign .gratitude .visual{background:#E0EEF0}
+          .home-redesign .icon{position:absolute!important;left:15px!important;bottom:12px!important;width:58px!important;height:58px!important;border-radius:50%!important;background:rgba(255,255,255,.92)!important;border:1px solid rgba(255,255,255,.9)!important;box-shadow:0 2px 8px rgba(70,55,45,.08)!important;font-size:0!important;color:transparent!important;display:flex!important;align-items:center!important;justify-content:center!important}
+          .home-redesign .icon::before{content:"";display:block;width:39px;height:39px;background-repeat:no-repeat;background-position:center;background-size:contain}
+          .home-redesign .word .icon::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%233F8A72' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9c6-2 12-1 18 3v29c-6-4-12-5-18-3V9Z'/%3E%3Cpath d='M42 9c-6-2-12-1-18 3v29c6-4 12-5 18-3V9Z'/%3E%3Cpath d='M24 12v29'/%3E%3Cpath d='m14 25 4 4 8-9'/%3E%3C/svg%3E")}
+          .home-redesign .prayer .icon::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%237B5A86' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 39c1-8 2-15 5-20 1-2 4-2 5 1l1 8 2-14c0-3 4-3 5 0l-1 16 2-9c1-3 5-2 5 1l-2 12c-1 4-4 6-8 6H12Z'/%3E%3Cpath d='M15 36c4-3 7-4 10-4 4 0 7 1 10 4'/%3E%3Cpath d='M24 7c1.5 2 3 3 5 4-2 1-3.5 2-5 4-1.5-2-3-3-5-4 2-1 3.5-2 5-4Z' fill='%23D79AA9' stroke='%23D79AA9'/%3E%3C/svg%3E")}
+          .home-redesign .note .icon::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23B27643' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 6h22l6 6v30H10V6Z'/%3E%3Cpath d='M32 6v7h6'/%3E%3Cpath d='M16 21h15M16 28h15M16 35h9'/%3E%3Cpath d='m31 31 4 4-7 7-5 1 1-5 7-7Z'/%3E%3C/svg%3E")}
+          .home-redesign .gratitude .icon::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%235D8A86' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 40S8 30 8 18c0-5 4-9 9-9 3 0 6 2 7 5 1-3 4-5 7-5 5 0 9 4 9 9 0 12-16 22-16 22Z'/%3E%3Cpath d='M16 23c2 2 4 3 8 3s6-1 8-3'/%3E%3C/svg%3E")}
+          .home-redesign .body{padding:12px 14px 14px}.home-redesign .title{font-size:18px;font-weight:800}.home-redesign .word .title{color:#39745F}.home-redesign .prayer .title{color:#70527C}.home-redesign .note .title{color:#9A6638}.home-redesign .gratitude .title{color:#4E7C79}.home-redesign .sub{font-size:11px;margin-top:5px;color:#77716A}.home-redesign .arrow{right:11px;bottom:11px;width:27px;height:27px;border-radius:50%;font-size:18px;background:rgba(255,255,255,.82);color:#716A63;box-shadow:0 1px 4px rgba(70,55,45,.06)}
+          </style>
+          <!-- /second-home-button-design-v2 -->'''
+          pattern=re.compile(re.escape(start)+r'.*?'+re.escape(end),re.S)
+          if pattern.search(s):
+              s=pattern.sub(css,s)
+          else:
+              s=s.replace('</body>',css+'</body>')
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index_v2.html
+          git rm .github/workflows/apply-second-button-design.yml
+          git commit -m 'Apply second design to home buttons'
+          git push
